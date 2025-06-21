@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Daily Updates</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    form, .entry { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    .entry { background: #f1f1f1; }
+    h2 { margin-top: 40px; }
+    .delete-btn { color: red; cursor: pointer; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>Post Daily Update</h2>
+  <form id="updateForm">
+    <input type="text" name="heading" placeholder="Heading" required><br><br>
+    <textarea name="content" placeholder="Content" required></textarea><br><br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>All Daily Updates</h2>
+  <div id="updateList"></div>
+
+  <script>
+    const form = document.getElementById('updateForm');
+    const updateList = document.getElementById('updateList');
+
+    // Load daily updates
+    async function loadUpdates() {
+      const res = await fetch('http://localhost:5000/api/daily-update');
+      const data = await res.json();
+      updateList.innerHTML = '';
+      data.forEach(entry => {
+        updateList.innerHTML += `
+          <div class="entry">
+            <h3>${entry.heading}</h3>
+            <p>${entry.content}</p>
+            <button class="delete-btn" onclick="deleteUpdate('${entry._id}')">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    // Submit form
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      const res = await fetch('http://localhost:5000/api/daily-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+      alert(result.message || 'Update submitted!');
+      form.reset();
+      loadUpdates();
+    });
+
+    // Delete update
+    async function deleteUpdate(id) {
+      const res = await fetch(`http://localhost:5000/api/daily-update/${id}`, {
+        method: 'DELETE'
+      });
+
+      const result = await res.json();
+      alert(result.message || result.error);
+      loadUpdates();
+    }
+
+    // On page load
+    window.onload = loadUpdates;
+  </script>
+</body>
+</html>

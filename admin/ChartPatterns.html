@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Chart Patterns</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    form {
+      padding: 15px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      width: 400px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .pattern-card {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+
+    img {
+      margin-top: 10px;
+      max-width: 300px;
+    }
+
+    .delete-btn {
+      background-color: crimson;
+      color: white;
+      padding: 8px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      width: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload New Chart Pattern</h2>
+  <form id="patternForm" enctype="multipart/form-data">
+    <input type="text" name="heading" placeholder="Heading" required>
+    <textarea name="content" placeholder="Description" required></textarea>
+    <input type="file" name="image" accept="image/*" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Uploaded Patterns</h2>
+  <div id="patternList"></div>
+
+  <script>
+    const form = document.getElementById('patternForm');
+    const list = document.getElementById('patternList');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const res = await fetch('http://localhost:5000/api/chart-patterns', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        alert('Chart Pattern Uploaded');
+        form.reset();
+        loadPatterns();
+      } else {
+        alert('Failed to upload');
+      }
+    });
+
+    async function deletePattern(id) {
+      if (confirm('Are you sure you want to delete this pattern?')) {
+        const res = await fetch(`http://localhost:5000/api/chart-patterns/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (res.ok) {
+          alert('Pattern deleted successfully');
+          loadPatterns();
+        } else {
+          alert('Failed to delete pattern');
+        }
+      }
+    }
+
+    async function loadPatterns() {
+      const res = await fetch('http://localhost:5000/api/chart-patterns');
+      const data = await res.json();
+
+      list.innerHTML = '';
+      data.forEach(item => {
+        list.innerHTML += `
+          <div class="pattern-card">
+            <h3>${item.heading}</h3>
+            <p>${item.content}</p>
+            <img src="http://localhost:5000${item.imageUrl}" alt="Pattern Image">
+            <br><small>${new Date(item.date).toLocaleString()}</small>
+            <br><button class="delete-btn" onclick="deletePattern('${item._id}')">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    window.onload = loadPatterns;
+  </script>
+</body>
+</html>

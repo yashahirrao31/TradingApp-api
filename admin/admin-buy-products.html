@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Buy Products</title>
+  <style>
+    form, .product { margin: 20px; padding: 10px; border: 1px solid #ccc; }
+    .product { background: #f9f9f9; }
+    .delete-btn { color: red; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Upload New Product</h2>
+  <form id="productForm">
+    <input type="text" id="heading" placeholder="Heading" required><br><br>
+    <input type="number" id="price" placeholder="Price" required><br><br>
+    <textarea id="content" placeholder="Content" required></textarea><br><br>
+    <button type="submit">Upload Product</button>
+  </form>
+
+  <h2>Uploaded Products</h2>
+  <div id="productList"></div>
+
+  <script>
+    const form = document.getElementById('productForm');
+    const productList = document.getElementById('productList');
+
+    // Fetch and show all products
+    async function fetchProducts() {
+      const res = await fetch('http://localhost:5000/api/buy-product');
+      const data = await res.json();
+      productList.innerHTML = '';
+      data.forEach(item => {
+        productList.innerHTML += `
+          <div class="product">
+            <h3>${item.heading}</h3>
+            <p><strong>Price:</strong> ₹${item.price}</p>
+            <p>${item.content}</p>
+            <button class="delete-btn" onclick="deleteProduct('${item._id}')">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    fetchProducts();
+
+    // Upload product
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const heading = document.getElementById('heading').value;
+      const price = document.getElementById('price').value;
+      const content = document.getElementById('content').value;
+
+      await fetch('http://localhost:5000/api/buy-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heading, price, content })
+      });
+
+      form.reset();
+      fetchProducts();
+    });
+
+    // Delete product
+    async function deleteProduct(id) {
+      await fetch(`http://localhost:5000/api/buy-product/${id}`, {
+        method: 'DELETE'
+      });
+      fetchProducts();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Watch Videos</title>
+  <style>
+    form, .video-box { margin: 20px; padding: 10px; border: 1px solid #ccc; }
+    .video-box { background: #f9f9f9; }
+    .delete-btn { color: red; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Upload New Video</h2>
+  <form id="videoForm">
+    <input type="text" id="heading" placeholder="Heading" required><br><br>
+    <textarea id="content" placeholder="Content/Description" required></textarea><br><br>
+    <input type="url" id="youtubeLink" placeholder="YouTube Link" required><br><br>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Uploaded Videos</h2>
+  <div id="videoList"></div>
+
+  <script>
+    const videoForm = document.getElementById('videoForm');
+    const videoList = document.getElementById('videoList');
+
+    function extractYouTubeID(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    async function loadVideos() {
+      const res = await fetch('http://localhost:5000/api/watch-video');
+      const data = await res.json();
+      videoList.innerHTML = '';
+      data.forEach(item => {
+        const videoId = extractYouTubeID(item.youtubeLink);
+        videoList.innerHTML += `
+          <div class="video-box">
+            <h3>${item.heading}</h3>
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+            <p>${item.content}</p>
+            <button class="delete-btn" onclick="deleteVideo('${item._id}')">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    videoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const heading = document.getElementById('heading').value;
+      const content = document.getElementById('content').value;
+      const youtubeLink = document.getElementById('youtubeLink').value;
+
+      const res = await fetch('http://localhost:5000/api/watch-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ heading, content, youtubeLink })
+      });
+
+      if (res.ok) {
+        alert('Video Uploaded');
+        videoForm.reset();
+        loadVideos();
+      } else {
+        alert('Failed to upload video');
+      }
+    });
+
+    async function deleteVideo(id) {
+      const res = await fetch(`http://localhost:5000/api/watch-video/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        alert('Deleted successfully');
+        loadVideos();
+      } else {
+        alert('Failed to delete');
+      }
+    }
+
+    window.onload = loadVideos;
+  </script>
+</body>
+</html>

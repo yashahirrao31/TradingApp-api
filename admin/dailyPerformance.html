@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Daily Performance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    form {
+      padding: 15px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      width: 400px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .entry {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+
+    .entry img {
+      margin-top: 10px;
+      max-width: 300px;
+    }
+
+    .delete-btn {
+      background-color: crimson;
+      color: white;
+      padding: 8px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      width: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload New Daily Performance</h2>
+  <form id="performanceForm" enctype="multipart/form-data">
+    <input type="text" name="heading" placeholder="Heading" required>
+    <textarea name="content" placeholder="Description" required></textarea>
+    <input type="file" name="image" accept="image/*" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Uploaded Performances</h2>
+  <div id="entriesContainer"></div>
+
+  <script>
+    const form = document.getElementById('performanceForm');
+    const container = document.getElementById('entriesContainer');
+
+    // Submit new entry
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const res = await fetch('http://localhost:5000/api/daily-performance', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        alert('Performance Uploaded');
+        form.reset();
+        fetchEntries();
+      } else {
+        alert('Failed to upload');
+      }
+    });
+
+    // Delete function
+    async function deleteEntry(id) {
+      if (confirm('Are you sure you want to delete this entry?')) {
+        const res = await fetch(`http://localhost:5000/api/daily-performance/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (res.ok) {
+          alert('Entry deleted successfully');
+          fetchEntries();
+        } else {
+          alert('Failed to delete entry');
+        }
+      }
+    }
+
+    // Fetch all entries
+    async function fetchEntries() {
+      try {
+        const res = await fetch('http://localhost:5000/api/daily-performance');
+        const data = await res.json();
+
+        container.innerHTML = '';
+        data.forEach(item => {
+          container.innerHTML += `
+            <div class="entry">
+              <h3>${item.heading}</h3>
+              <p>${item.content}</p>
+              <img src="http://localhost:5000${item.imageUrl}" alt="Performance Image">
+              <br><small>${new Date(item.date).toLocaleString()}</small>
+              <br><button class="delete-btn" onclick="deleteEntry('${item._id}')">Delete</button>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+    }
+
+    window.onload = fetchEntries;
+  </script>
+</body>
+</html>

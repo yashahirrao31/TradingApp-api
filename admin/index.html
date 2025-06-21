@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="admin.js"></script>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="sidebar">
+      <h2>Admin Panel</h2>
+      <button onclick="loadPage('dailyPerformance.html')">Daily Performance</button>
+      <button onclick="loadPage('dailyUpdate.html')">Daily Update</button>
+      <button onclick="loadPage('AboutTrade.html')">About Trade</button>
+      <button onclick="loadPage('WatchVideos.html')">Watch Videos</button>
+      <button onclick="loadPage('admin-buy-products.html')">Add Product</button>
+      <button onclick="loadPage('TradingSessions.html')">Trading Sessions</button>
+      <button onclick="loadPage('ChartPatterns.html')">Chart Pattern</button>
+      <button onclick="loadPage('TradingMaterials.html')">Trading Materials</button>
+      <button onclick="loadPage('HelpDesk.html')">Help</button>
+      <button onclick="loadPage('AskedQuestions.html')">Ask Questions</button>
+
+      <!-- Add more buttons here -->
+    </div>
+
+    <div class="content">
+      <iframe id="adminFrame" src="dailyPerformance.html"></iframe>
+    </div>
+  </div>
+</body>
+</html>
