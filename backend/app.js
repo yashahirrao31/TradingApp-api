@@ -5,6 +5,9 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+const frontendPath = path.join(__dirname, '..', 'admin');
+
+
 
 // ✅ Middleware (order matters!)
 app.use(cors());
@@ -39,17 +42,24 @@ app.use('/api/asked-questions', askedQuestionRoutes);
 
 
 
-
-
-
-
-
 // ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('MongoDB Connected'))
   .catch(err => console.error('MongoDB Connection Error:', err));
+
+
+// ✅ Serve the admin frontend
+app.use(express.static(frontendPath));
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+
+
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
